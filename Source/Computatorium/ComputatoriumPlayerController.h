@@ -3,6 +3,9 @@
 #include "GameFramework/PlayerController.h"
 #include "ComputatoriumPlayerController.generated.h"
 
+// Forward Declaration
+class AFetchable;
+
 UCLASS()
 class AComputatoriumPlayerController : public APlayerController
 {
@@ -29,9 +32,9 @@ protected:
 	/** Navigate player to the current touch location. */
 	void MoveToTouchLocation(const ETouchIndex::Type FingerIndex, const FVector Location);
 	
-	/** Navigate player to the given world location. */
-	void SetNewMoveDestination(const FVector DestLocation);
-
+	/** Navigate player based upon hit */
+    void SetNewMoveDestination(const FHitResult& Hit);
+    
 	/** Input handlers for SetDestination action. */
 	void OnSetDestinationPressed();
 	void OnSetDestinationReleased();

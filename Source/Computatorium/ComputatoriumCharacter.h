@@ -3,6 +3,8 @@
 #include "GameFramework/Character.h"
 #include "ComputatoriumCharacter.generated.h"
 
+class AFetchable;
+
 UCLASS(Blueprintable)
 class AComputatoriumCharacter : public ACharacter
 {
@@ -20,7 +22,13 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns CursorToWorld subobject **/
 	FORCEINLINE class UDecalComponent* GetCursorToWorld() { return CursorToWorld; }
-
+    
+    UFUNCTION(BlueprintCallable, Category="Fetchable")
+    void SetTargetFetchable(AFetchable* fetchable);
+    
+    UFUNCTION()
+    void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+    
 private:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -33,5 +41,8 @@ private:
 	/** A decal that projects to the cursor location. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UDecalComponent* CursorToWorld;
+    
+    UPROPERTY(VisibleAnywhere, Category="Fetchable")
+    AFetchable* TargetFetchable;
 };
 

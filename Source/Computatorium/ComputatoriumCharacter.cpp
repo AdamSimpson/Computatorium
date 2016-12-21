@@ -2,12 +2,17 @@
 
 #include "Computatorium.h"
 #include "ComputatoriumCharacter.h"
+#include "Fetchable.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "Kismet/HeadMountedDisplayFunctionLibrary.h"
 
-AComputatoriumCharacter::AComputatoriumCharacter()
-{
+// Print to screen debug
+// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target fetchable!"));
+#include <EngineGlobals.h>
+#include <Runtime/Engine/Classes/Engine/Engine.h>
+
+AComputatoriumCharacter::AComputatoriumCharacter() {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -30,7 +35,7 @@ AComputatoriumCharacter::AComputatoriumCharacter()
 	CameraBoom->RelativeRotation = FRotator(-60.f, 0.f, 0.f);
 	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
-										  // Create a camera...
+    // Create a camera...
 	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 	TopDownCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	TopDownCameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
@@ -49,10 +54,11 @@ AComputatoriumCharacter::AComputatoriumCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+    
+    OnActorHit.AddDynamic(this, &AComputatoriumCharacter::OnHit);
 }
 
-void AComputatoriumCharacter::Tick(float DeltaSeconds)
-{
+void AComputatoriumCharacter::Tick(float DeltaSeconds) {
     Super::Tick(DeltaSeconds);
 
 	if (CursorToWorld != nullptr)
@@ -81,4 +87,17 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds)
 			CursorToWorld->SetWorldRotation(CursorR);
 		}
 	}
+}
+
+void AComputatoriumCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit) {
+    if(OtherActor == TargetFetchable) {
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
+    }
+}
+
+void AComputatoriumCharacter::SetTargetFetchable(AFetchable* Fetchable) {
+    TargetFetchable = Fetchable;
+    
+    if(Fetchable != nullptr)
+      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target fetchable!"));
 }

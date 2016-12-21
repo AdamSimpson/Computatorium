@@ -2,30 +2,27 @@
 
 #include "Computatorium.h"
 #include "ComputatoriumPlayerController.h"
+#include "Fetchable.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "Kismet/HeadMountedDisplayFunctionLibrary.h"
 #include "ComputatoriumCharacter.h"
 
-AComputatoriumPlayerController::AComputatoriumPlayerController()
-{
+AComputatoriumPlayerController::AComputatoriumPlayerController() {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
 }
 
-void AComputatoriumPlayerController::PlayerTick(float DeltaTime)
-{
+void AComputatoriumPlayerController::PlayerTick(float DeltaTime) {
 	Super::PlayerTick(DeltaTime);
 
 	// keep updating the destination every tick while desired
-	if (bMoveToMouseCursor)
-	{
+	if (bMoveToMouseCursor) {
 		MoveToMouseCursor();
 	}
 }
 
-void AComputatoriumPlayerController::SetupInputComponent()
-{
+void AComputatoriumPlayerController::SetupInputComponent() {
 	// set up gameplay key bindings
 	Super::SetupInputComponent();
 
@@ -39,33 +36,26 @@ void AComputatoriumPlayerController::SetupInputComponent()
 	InputComponent->BindAction("ResetVR", IE_Pressed, this, &AComputatoriumPlayerController::OnResetVR);
 }
 
-void AComputatoriumPlayerController::OnResetVR()
-{
+void AComputatoriumPlayerController::OnResetVR() {
 	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
 
-void AComputatoriumPlayerController::MoveToMouseCursor()
-{
-	if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
-	{
-		if (AComputatoriumCharacter* MyPawn = Cast<AComputatoriumCharacter>(GetPawn()))
-		{
-			if (MyPawn->GetCursorToWorld())
-			{
+void AComputatoriumPlayerController::MoveToMouseCursor() {
+	if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled()) {
+		if (AComputatoriumCharacter* MyPawn = Cast<AComputatoriumCharacter>(GetPawn())) {
+			if (MyPawn->GetCursorToWorld()) {
 				UNavigationSystem::SimpleMoveToLocation(this, MyPawn->GetCursorToWorld()->GetComponentLocation());
 			}
 		}
 	}
-	else
-	{
+	else {
 		// Trace to see what is under the mouse cursor
 		FHitResult Hit;
 		GetHitResultUnderCursor(ECC_Visibility, false, Hit);
 
-		if (Hit.bBlockingHit)
-		{
+		if (Hit.bBlockingHit) {
 			// We hit something, move there
-			SetNewMoveDestination(Hit.ImpactPoint);
+			SetNewMoveDestination(Hit);
 		}
 	}
 }
@@ -77,37 +67,39 @@ void AComputatoriumPlayerController::MoveToTouchLocation(const ETouchIndex::Type
 	// Trace to see what is under the touch location
 	FHitResult HitResult;
 	GetHitResultAtScreenPosition(ScreenSpaceLocation, CurrentClickTraceChannel, true, HitResult);
-	if (HitResult.bBlockingHit)
-	{
-		// We hit something, move there
-		SetNewMoveDestination(HitResult.ImpactPoint);
+	if (HitResult.bBlockingHit) {
+		// We hit something, move there and potentially update fetchable target
+		SetNewMoveDestination(HitResult);
 	}
 }
 
-void AComputatoriumPlayerController::SetNewMoveDestination(const FVector DestLocation)
+void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit)
 {
-	APawn* const MyPawn = GetPawn();
-	if (MyPawn)
-	{
-		UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();
-		float const Distance = FVector::Dist(DestLocation, MyPawn->GetActorLocation());
+    auto Player = Cast<AComputatoriumCharacter>(GetPawn());
+    
+	if (Player) {
+        FVector HitLocation = Hit.ImpactPoint;
+        UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();
+		float const Distance = FVector::Dist(HitLocation, Player->GetActorLocation());
 
 		// We need to issue move command only if far enough in order for walk animation to play correctly
-		if (NavSys && (Distance > 120.0f))
-		{
-			NavSys->SimpleMoveToLocation(this, DestLocation);
+		if (NavSys && (Distance > 120.0f)) {
+			NavSys->SimpleMoveToLocation(this, HitLocation);
+            
+            // Set players target fetchable
+            auto* HitActor = Hit.GetActor();
+            auto *TestFetchable = Cast<AFetchable>(HitActor);
+            Player->SetTargetFetchable(TestFetchable);
 		}
 	}
 }
 
-void AComputatoriumPlayerController::OnSetDestinationPressed()
-{
+void AComputatoriumPlayerController::OnSetDestinationPressed() {
 	// set flag to keep updating destination until released
 	bMoveToMouseCursor = true;
 }
 
-void AComputatoriumPlayerController::OnSetDestinationReleased()
-{
+void AComputatoriumPlayerController::OnSetDestinationReleased() {
 	// clear flag to indicate we should stop updating the destination
 	bMoveToMouseCursor = false;
 }
