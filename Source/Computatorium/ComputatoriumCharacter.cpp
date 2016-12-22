@@ -91,6 +91,10 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds) {
 
 void AComputatoriumCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit) {
     if(OtherActor == TargetFetchable) {
+        FName FSocketName = TEXT("FetchableSocket");
+        const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+        TargetFetchable->AttachToActor(this, AttachmentRules, FSocketName);
+        
         GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
     }
 }
