@@ -90,13 +90,19 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds) {
 }
 
 void AComputatoriumCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit) {
+    
     if(OtherActor == TargetFetchable) {
-        FName FSocketName = TEXT("FetchableSocket");
+        // Disable Collision on Fetchable
+        TargetFetchable->SetActorEnableCollision(false);
+        
+        // Attach fetchable to player's mesh(attaching to the actor directly attaches to it's capsule)
+        const FName FSocketName = TEXT("fetchable_socket");
         const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-        TargetFetchable->AttachToActor(this, AttachmentRules, FSocketName);
+        TargetFetchable->AttachToComponent(GetMesh(), AttachmentRules, FSocketName);
         
         GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
     }
+    
 }
 
 void AComputatoriumCharacter::SetTargetFetchable(AFetchable* Fetchable) {
