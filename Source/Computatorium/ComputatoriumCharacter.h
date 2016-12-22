@@ -4,6 +4,7 @@
 #include "ComputatoriumCharacter.generated.h"
 
 class AFetchable;
+class AReceptor;
 
 UCLASS(Blueprintable)
 class AComputatoriumCharacter : public ACharacter
@@ -26,6 +27,9 @@ public:
     UFUNCTION(BlueprintCallable, Category="Fetchable")
     void SetTargetFetchable(AFetchable* fetchable);
     
+    UFUNCTION(BlueprintCallable, Category="Receptor")
+    void SetTargetReseptor(AReceptor* receptor);
+    
     UFUNCTION()
     void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
     
@@ -44,5 +48,8 @@ private:
     
     UPROPERTY(VisibleAnywhere, Category="Fetchable")
     AFetchable* TargetFetchable;
+    
+    UPROPERTY(VisibleAnywhere, Category="Receptor")
+    AReceptor* TargetReceptor;
 };
 

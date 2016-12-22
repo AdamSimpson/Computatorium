@@ -86,10 +86,15 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
 		if (NavSys && (Distance > 120.0f)) {
 			NavSys->SimpleMoveToLocation(this, HitLocation);
             
-            // Set players target fetchable
             auto* HitActor = Hit.GetActor();
+
+            // Set players target fetchable
             auto *TestFetchable = Cast<AFetchable>(HitActor);
             Player->SetTargetFetchable(TestFetchable);
+            
+            // Set players target receptor
+            auto *TestReceptor = Cast<AReceptor>(HitActor);
+            Player->SetTargetReceptor(TestReceptor);
 		}
 	}
 }

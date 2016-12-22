@@ -3,6 +3,7 @@
 #include "Computatorium.h"
 #include "ComputatoriumCharacter.h"
 #include "Fetchable.h"
+#include "Receptor.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "Kismet/HeadMountedDisplayFunctionLibrary.h"
@@ -102,7 +103,17 @@ void AComputatoriumCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVect
         
         GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
     }
-    
+    else if(OtherActor == TargetReceptor) {
+        // Disable Collision on Fetchable
+        TargetFetchable->SetActorEnableCollision(false);
+        
+        // Attach fetchable to player's mesh(attaching to the actor directly attaches to it's capsule)
+        const FName FSocketName = TEXT("fetchable_socket");
+        const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+        TargetFetchable->AttachToComponent(TargetReceptor->GetMesh(), AttachmentRules, FSocketName);
+        
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
+    }
 }
 
 void AComputatoriumCharacter::SetTargetFetchable(AFetchable* Fetchable) {

@@ -25,5 +25,4 @@ private:
     /** Static mesh to represent the fetchable in the level*/
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Fetchable", meta = (AllowPrivateAccess = "true"))
     class UStaticMeshComponent* Mesh;
-    
 };
