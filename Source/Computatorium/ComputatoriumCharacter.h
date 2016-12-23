@@ -28,7 +28,7 @@ public:
     void SetTargetFetchable(AFetchable* fetchable);
     
     UFUNCTION(BlueprintCallable, Category="Receptor")
-    void SetTargetReseptor(AReceptor* receptor);
+    void SetTargetReceptor(AReceptor* receptor);
     
     UFUNCTION()
     void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
@@ -48,6 +48,9 @@ private:
     
     UPROPERTY(VisibleAnywhere, Category="Fetchable")
     AFetchable* TargetFetchable;
+
+    UPROPERTY(VisibleAnywhere, Category="Fetchable")
+    AFetchable* HeldFetchable;
     
     UPROPERTY(VisibleAnywhere, Category="Receptor")
     AReceptor* TargetReceptor;

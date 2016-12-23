@@ -16,7 +16,7 @@ public:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+    
     /** Collision mesh to represent the fetchable in the level*/
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Receptor", meta = (AllowPrivateAccess = "true"))
     class UBoxComponent* HitBox;

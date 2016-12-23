@@ -3,6 +3,7 @@
 #include "Computatorium.h"
 #include "ComputatoriumPlayerController.h"
 #include "Fetchable.h"
+#include "Receptor.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "Kismet/HeadMountedDisplayFunctionLibrary.h"

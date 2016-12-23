@@ -10,8 +10,8 @@
 
 // Print to screen debug
 // GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target fetchable!"));
-#include <EngineGlobals.h>
-#include <Runtime/Engine/Classes/Engine/Engine.h>
+#include "EngineGlobals.h"
+#include "Runtime/Engine/Classes/Engine/Engine.h"
 
 AComputatoriumCharacter::AComputatoriumCharacter() {
 	// Set size for player capsule
@@ -101,18 +101,27 @@ void AComputatoriumCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVect
         const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
         TargetFetchable->AttachToComponent(GetMesh(), AttachmentRules, FSocketName);
         
+        // Set the held fetchable and invalidate the target fetchable
+        HeldFetchable = TargetFetchable;
+        TargetFetchable = nullptr;
+        
         GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
     }
-    else if(OtherActor == TargetReceptor) {
-        // Disable Collision on Fetchable
-        TargetFetchable->SetActorEnableCollision(false);
+
+    else if(HeldFetchable && OtherActor == TargetReceptor) {
+        // Detach fetchable from player
+        const FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, false);
+        HeldFetchable->DetachFromActor(DetachRules);
         
-        // Attach fetchable to player's mesh(attaching to the actor directly attaches to it's capsule)
-        const FName FSocketName = TEXT("fetchable_socket");
-        const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-        TargetFetchable->AttachToComponent(TargetReceptor->GetMesh(), AttachmentRules, FSocketName);
+        // Enable Collision on Fetchable
+        HeldFetchable->SetActorEnableCollision(true);
         
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
+        // Attach to receptors socket
+//        const FName FSocketName = TEXT("fetchable_socket");
+//        const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+//        HeldFetchable->AttachToComponent(TargetReceptor->Mesh, AttachmentRules, FSocketName);
+        
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Receptored!"));
     }
 }
 
@@ -121,4 +130,11 @@ void AComputatoriumCharacter::SetTargetFetchable(AFetchable* Fetchable) {
     
     if(Fetchable != nullptr)
       GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target fetchable!"));
+}
+
+void AComputatoriumCharacter::SetTargetReceptor(AReceptor* Receptor) {
+    TargetReceptor = Receptor;
+    
+    if(Receptor != nullptr)
+        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target receptor!"));
 }
