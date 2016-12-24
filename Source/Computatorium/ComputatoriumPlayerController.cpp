@@ -4,6 +4,7 @@
 #include "ComputatoriumPlayerController.h"
 #include "Fetchable.h"
 #include "Receptor.h"
+#include "Runtime/Engine/Classes/GameFramework/Pawn.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "Kismet/HeadMountedDisplayFunctionLibrary.h"
@@ -80,23 +81,28 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
     
 	if (Player) {
         FVector HitLocation = Hit.ImpactPoint;
-        UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();
 		float const Distance = FVector::Dist(HitLocation, Player->GetActorLocation());
 
+        auto* HitActor = Hit.GetActor();
+        
+        // Set players target fetchable
+        auto *TestFetchable = Cast<AFetchable>(HitActor);
+        Player->SetTargetFetchable(TestFetchable);
+        
+        // Set players target receptor
+        auto *TestReceptor = Cast<AReceptor>(HitActor);
+        Player->SetTargetReceptor(TestReceptor);
+        
+        // Set the selected fetchable to not effect navigation
+        if(TestFetchable)
+            TestFetchable->HitBox->SetCanEverAffectNavigation(false);
+            
+        
 		// We need to issue move command only if far enough in order for walk animation to play correctly
+        UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();
 		if (NavSys && (Distance > 120.0f)) {
 			NavSys->SimpleMoveToLocation(this, HitLocation);
-            
-            auto* HitActor = Hit.GetActor();
-
-            // Set players target fetchable
-            auto *TestFetchable = Cast<AFetchable>(HitActor);
-            Player->SetTargetFetchable(TestFetchable);
-            
-            // Set players target receptor
-            auto *TestReceptor = Cast<AReceptor>(HitActor);
-            Player->SetTargetReceptor(TestReceptor);
-		}
+        }
 	}
 }
 

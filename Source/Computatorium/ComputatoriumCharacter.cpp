@@ -110,16 +110,16 @@ void AComputatoriumCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVect
 
     else if(HeldFetchable && OtherActor == TargetReceptor) {
         // Detach fetchable from player
-        const FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, false);
+        const FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
         HeldFetchable->DetachFromActor(DetachRules);
         
         // Enable Collision on Fetchable
         HeldFetchable->SetActorEnableCollision(true);
         
         // Attach to receptors socket
-//        const FName FSocketName = TEXT("fetchable_socket");
-//        const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-//        HeldFetchable->AttachToComponent(TargetReceptor->Mesh, AttachmentRules, FSocketName);
+        const FName FSocketName = TEXT("fetchable_socket");
+        const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+        HeldFetchable->AttachToComponent(TargetReceptor->Mesh, AttachmentRules, FSocketName);
         
         GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Receptored!"));
     }
