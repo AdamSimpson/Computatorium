@@ -38,6 +38,15 @@
 *.opensdf
 *.sdf
 *.VC.opendb
+*.xcworkspace 
+
+# CLion related files
+Computatorium.workspace
+ComputatoriumCodeCompletionFolders.txt
+ComputatoriumCodeLitePreProcessor.txt
+CMake*
+cmake*
+.idea
 
 # Precompiled Assets
 SourceArt/**/*.png
@@ -60,3 +69,6 @@ Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# Mac metadata
+.DS_Store
