@@ -96,13 +96,12 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
         // Set the selected fetchable to not effect navigation
         if(TestFetchable)
             TestFetchable->HitBox->SetCanEverAffectNavigation(false);
-            
-        
+
 		// We need to issue move command only if far enough in order for walk animation to play correctly
         UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();
-		if (NavSys && (Distance > 120.0f)) {
+	//	if (NavSys && (Distance > 120.0f)) {
 			NavSys->SimpleMoveToLocation(this, HitLocation);
-        }
+//		}
 	}
 }
 
