@@ -6,8 +6,7 @@
 // Fetchable items can be picked up by a worker character and moved
 
 // Sets default values
-AFetchable::AFetchable()
-{
+AFetchable::AFetchable() {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
     
@@ -21,8 +20,6 @@ AFetchable::AFetchable()
 }
 
 // Called when the game starts or when spawned
-void AFetchable::BeginPlay()
-{
-	Super::BeginPlay();
-	
+void AFetchable::BeginPlay() {
+	Super::BeginPlay();	
 }

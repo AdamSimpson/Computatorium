@@ -77,25 +77,21 @@ void AComputatoriumPlayerController::MoveToTouchLocation(const ETouchIndex::Type
 
 void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit)
 {
-    auto Player = Cast<AComputatoriumCharacter>(GetPawn());
+    auto APlayer = Cast<AComputatoriumCharacter>(GetPawn());
     
-	if (Player) {
+	if (APlayer) {
         FVector HitLocation = Hit.ImpactPoint;
-		float const Distance = FVector::Dist(HitLocation, Player->GetActorLocation());
+		float const Distance = FVector::Dist(HitLocation, APlayer->GetActorLocation());
 
         auto* HitActor = Hit.GetActor();
         
         // Set players target fetchable
         auto *TestFetchable = Cast<AFetchable>(HitActor);
-        Player->SetTargetFetchable(TestFetchable);
+        APlayer->SetTargetFetchable(TestFetchable);
         
         // Set players target receptor
         auto *TestReceptor = Cast<AReceptor>(HitActor);
-        Player->SetTargetReceptor(TestReceptor);
-        
-        // Set the selected fetchable to not effect navigation
-        if(TestFetchable)
-            TestFetchable->HitBox->SetCanEverAffectNavigation(false);
+        APlayer->SetTargetReceptor(TestReceptor);
 
 		// We need to issue move command only if far enough in order for walk animation to play correctly
         UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();

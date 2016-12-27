@@ -20,9 +20,7 @@ public:
     /** Collision mesh to represent the fetchable in the level*/
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Receptor", meta = (AllowPrivateAccess = "true"))
     class UBoxComponent* HitBox;
-    
-    /** Static mesh to represent the fetchable in the level*/
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Receptor", meta = (AllowPrivateAccess = "true"))
-    class UStaticMeshComponent* Mesh;
-	
+
+	UFUNCTION()
+	bool CanAcceptFetchable(class AFetchable *Fetchable);
 };

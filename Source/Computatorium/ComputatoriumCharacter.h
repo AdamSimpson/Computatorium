@@ -30,9 +30,6 @@ public:
     UFUNCTION(BlueprintCallable, Category="Receptor")
     void SetTargetReceptor(AReceptor* receptor);
     
-    UFUNCTION()
-    void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
-    
 private:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -51,8 +48,32 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category="Fetchable")
     AFetchable* HeldFetchable;
+
+	UPROPERTY(VisibleAnywhere, Category = "Fetchable")
+	AFetchable* OverlappingFetchable;
     
     UPROPERTY(VisibleAnywhere, Category="Receptor")
     AReceptor* TargetReceptor;
+
+	UPROPERTY(VisibleAnywhere, Category = "Receptor")
+	AReceptor* OverlappingReceptor;
+
+	UFUNCTION()
+	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION()
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void PickupFetchable(AFetchable* Fetchable);
+
+	UFUNCTION()
+	void DropOffFetchable(AFetchable* Fetchable, AReceptor* Receptor);
+
+	UFUNCTION()
+	bool CanPickupFetchable(AFetchable* Fetchable);
 };
 

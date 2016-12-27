@@ -23,7 +23,7 @@ AComputatoriumCharacter::AComputatoriumCharacter() {
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Rotate character to moving direction
+	GetCharacterMovement()->bOrientRotationToMovement = true; // Rotate character to moving direction 
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 640.f, 0.f);
 	GetCharacterMovement()->bConstrainToPlane = true;
 	GetCharacterMovement()->bSnapToPlaneAtStart = true;
@@ -56,7 +56,15 @@ AComputatoriumCharacter::AComputatoriumCharacter() {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
     
-    OnActorHit.AddDynamic(this, &AComputatoriumCharacter::OnHit);
+	// Register OnHit delegate
+ //   OnActorHit.AddDynamic(this, &AComputatoriumCharacter::OnHit);
+
+	// Register OnOverlap delegates
+	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AComputatoriumCharacter::OnBeginOverlap);
+	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AComputatoriumCharacter::OnEndOverlap);
+
+	OverlappingReceptor = nullptr;
+	OverlappingFetchable = nullptr;
 }
 
 void AComputatoriumCharacter::Tick(float DeltaSeconds) {
@@ -88,48 +96,116 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds) {
 			CursorToWorld->SetWorldRotation(CursorR);
 		}
 	}
+
+	// Check if player needs to pickup or dropoff fetchable
+	if (TargetFetchable != nullptr && OverlappingFetchable == TargetFetchable && CanPickupFetchable(TargetFetchable)) {
+		PickupFetchable(TargetFetchable);
+	}
+	if (TargetReceptor != nullptr && OverlappingReceptor == TargetReceptor && TargetReceptor->CanAcceptFetchable(HeldFetchable)) {
+		DropOffFetchable(HeldFetchable, TargetReceptor);
+	}
+}
+
+bool AComputatoriumCharacter::CanPickupFetchable(AFetchable* Fetchable) {
+	// If we aren't holding a fetchable we can pick one up
+	return (HeldFetchable == nullptr);
 }
 
 void AComputatoriumCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit) {
-    
-    if(OtherActor == TargetFetchable) {
-        // Disable Collision on Fetchable
-        TargetFetchable->SetActorEnableCollision(false);
-        
-        // Attach fetchable to player's mesh(attaching to the actor directly attaches to it's capsule)
-        const FName FSocketName = TEXT("fetchable_socket");
-        const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-        TargetFetchable->AttachToComponent(GetMesh(), AttachmentRules, FSocketName);
-        
-        // Set the held fetchable and invalidate the target fetchable
-        HeldFetchable = TargetFetchable;
-        TargetFetchable = nullptr;
-        
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
-    }
 
-    else if(HeldFetchable && OtherActor == TargetReceptor) {
-        // Detach fetchable from player
-        const FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
-        HeldFetchable->DetachFromActor(DetachRules);
-        
-        // Enable Collision on Fetchable
-        HeldFetchable->SetActorEnableCollision(true);
-        
-        // Attach to receptors socket
-        const FName FSocketName = TEXT("fetchable_socket");
-        const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-        HeldFetchable->AttachToComponent(TargetReceptor->Mesh, AttachmentRules, FSocketName);
-        
-        GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Receptored!"));
-    }
+}
+
+void AComputatoriumCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp,
+	                                         AActor* OtherActor, 
+	                                         UPrimitiveComponent* OtherComp, 
+	                                         int32 OtherBodyIndex, 
+	                                         bool bFromSweep,
+	                                         const FHitResult& SweepResult)  {
+
+	if ( (OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) ) {
+
+		// Begin to overlap a fetchable
+		AFetchable *TestFetchable = Cast<AFetchable>(OtherActor);
+		if (TestFetchable) {
+			OverlappingFetchable = TestFetchable;
+		}
+
+		// Begin to overlap a receptor
+		AReceptor *TestReceptor = Cast<AReceptor>(OtherActor);
+		if (TestReceptor) {
+			OverlappingReceptor = TestReceptor;
+		}
+	}
+}
+
+void AComputatoriumCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComp,
+	                                       AActor* OtherActor,
+	                                       UPrimitiveComponent* OtherComp,
+	                                       int32 OtherBodyIndex) {
+
+	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)) {
+
+		// End overlap targeted fetchable
+		if (OtherActor == OverlappingFetchable && OverlappingFetchable != nullptr) {
+			OverlappingFetchable = nullptr;
+		}
+
+		// End overlap of Receptor
+		if (OtherActor == OverlappingReceptor && OverlappingReceptor != nullptr) {
+			OverlappingReceptor = nullptr;
+		}
+	}
+}
+
+void AComputatoriumCharacter::PickupFetchable(AFetchable* Fetchable) {
+	// Attach fetchable to player's mesh(attaching to the actor directly attaches to it's capsule)
+	const FName FSocketName = TEXT("fetchable_socket");
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	Fetchable->AttachToComponent(GetMesh(), AttachmentRules, FSocketName);
+
+	// Set the held fetchable
+	HeldFetchable = Fetchable;
+
+	// Reset target fetchable
+	TargetFetchable = nullptr;
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
+}
+
+void AComputatoriumCharacter::DropOffFetchable(AFetchable* Fetchable, AReceptor* Receptor) {
+	// Detach fetchable from player
+	const FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+	Fetchable->DetachFromActor(DetachRules);
+
+	// Enable navigation affect
+	Fetchable->HitBox->SetCanEverAffectNavigation(true);
+
+	// Attach to receptors socket
+	const FName FSocketName = TEXT("fetchable_socket");
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	//        HeldFetchable->AttachToComponent(TargetReceptor->Mesh, AttachmentRules, FSocketName);
+	// Need to detach from player and place in hitbox
+
+	// Unset target receptor
+	TargetReceptor = nullptr;
+
+	// Unset held fetchable
+	HeldFetchable = nullptr;
+
+	// TODO : Should probably trigger navigation event to push actor out from the box here
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Receptored!"));
 }
 
 void AComputatoriumCharacter::SetTargetFetchable(AFetchable* Fetchable) {
     TargetFetchable = Fetchable;
     
-    if(Fetchable != nullptr)
-      GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target fetchable!"));
+	if (Fetchable) {
+		// Disable navigation effects from fetchable so our player can hit it
+		Fetchable->HitBox->SetCanEverAffectNavigation(false);
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target fetchable!"));
+	}
 }
 
 void AComputatoriumCharacter::SetTargetReceptor(AReceptor* Receptor) {
