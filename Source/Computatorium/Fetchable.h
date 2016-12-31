@@ -3,6 +3,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "AcceptsFetchable.h"
 #include "Fetchable.generated.h"
 
 UCLASS()
@@ -24,4 +25,10 @@ public:
     /** Static mesh to represent the fetchable in the level*/
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Fetchable", meta = (AllowPrivateAccess = "true"))
     class UStaticMeshComponent* Mesh;
+
+	void BindToActor(AcceptsFetchable *BindingActor, USceneComponent *BindingComponent);
+
+private:
+//	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fetchable", meta = (AllowPrivateAccess = "true"))
+	AcceptsFetchable* BindingActor;
 };

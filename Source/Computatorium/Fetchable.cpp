@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Computatorium.h"
+#include "AcceptsFetchable.h"
 #include "Fetchable.h"
 
 // Fetchable items can be picked up by a worker character and moved
@@ -17,6 +18,34 @@ AFetchable::AFetchable() {
     // Create the static mesh component
     Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
     Mesh->SetupAttachment(RootComponent);
+
+	BindingActor = nullptr;
+}
+// Assume Component contains a socket named "fetchable_socket"
+void AFetchable::BindToActor(AcceptsFetchable *Actor, USceneComponent *Component) {
+	if (BindingActor != nullptr) {
+		BindingActor->PreUnbindFetchable(this);
+
+		// Detach from current binding actor
+		const FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
+		DetachFromActor(DetachRules);
+
+		BindingActor->PostUnbindFetchable(this);
+	}
+	// Set new binding actor
+	BindingActor = Actor;
+
+	BindingActor->PreBindFetchable(this);
+
+	// Attach fetchable to mesh socket
+	const FName FSocketName = TEXT("fetchable_socket");
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget,
+		                                            EAttachmentRule::SnapToTarget,
+		                                            EAttachmentRule::KeepWorld,
+		                                            true);
+	AttachToComponent(Component, AttachmentRules, FSocketName);
+
+	BindingActor->PostBindFetchable(this);
 }
 
 // Called when the game starts or when spawned

@@ -3,10 +3,11 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "AcceptsFetchable.h"
 #include "Receptor.generated.h"
 
 UCLASS()
-class COMPUTATORIUM_API AReceptor : public AActor
+class COMPUTATORIUM_API AReceptor : public AActor, public AcceptsFetchable
 {
 	GENERATED_BODY()
 	
@@ -21,6 +22,15 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Receptor", meta = (AllowPrivateAccess = "true"))
     class UBoxComponent* HitBox;
 
-	UFUNCTION()
-	bool CanAcceptFetchable(class AFetchable *Fetchable);
+	/** Static mesh used to setup attachment sockets */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Fetchable", meta = (AllowPrivateAccess = "true"))
+	class UStaticMeshComponent* Mesh;
+
+	// Accept fetchable overrides
+	bool CanBindFetchable(class AFetchable *Fetchable) override;
+	void PostBindFetchable(AFetchable *Fetchable) override;
+	void PostUnbindFetchable(AFetchable *Fetchable) override;
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fetchable", meta = (AllowPrivateAccess = "true"))
+	class AFetchable* BoundFetchable;
 };

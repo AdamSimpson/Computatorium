@@ -19,7 +19,7 @@ AComputatoriumCharacter::AComputatoriumCharacter() {
 
 	// Don't rotate character to camera direction
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
+	bUseControllerRotationYaw = false; 
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
@@ -97,18 +97,21 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds) {
 		}
 	}
 
-	// Check if player needs to pickup or dropoff fetchable
-	if (TargetFetchable != nullptr && OverlappingFetchable == TargetFetchable && CanPickupFetchable(TargetFetchable)) {
-		PickupFetchable(TargetFetchable);
+	// Check if player needs to bind to fetchable object
+	if (TargetFetchable != nullptr && OverlappingFetchable == TargetFetchable && CanBindFetchable(TargetFetchable)) {
+		TargetFetchable->BindToActor(this, GetMesh());
 	}
-	if (TargetReceptor != nullptr && OverlappingReceptor == TargetReceptor && TargetReceptor->CanAcceptFetchable(HeldFetchable)) {
-		DropOffFetchable(HeldFetchable, TargetReceptor);
+
+	// Check if player needs to deposit the fetchable object to receptor
+	if (TargetReceptor != nullptr && OverlappingReceptor == TargetReceptor && TargetReceptor->CanBindFetchable(BoundFetchable)) {
+		BoundFetchable->BindToActor(TargetReceptor, TargetReceptor->Mesh);
 	}
+
 }
 
-bool AComputatoriumCharacter::CanPickupFetchable(AFetchable* Fetchable) {
+bool AComputatoriumCharacter::CanBindFetchable(AFetchable* Fetchable) {
 	// If we aren't holding a fetchable we can pick one up
-	return (HeldFetchable == nullptr);
+	return (BoundFetchable == nullptr);
 }
 
 void AComputatoriumCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit) {
@@ -157,54 +160,51 @@ void AComputatoriumCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComp,
 	}
 }
 
-void AComputatoriumCharacter::PickupFetchable(AFetchable* Fetchable) {
-	// Attach fetchable to player's mesh(attaching to the actor directly attaches to it's capsule)
-	const FName FSocketName = TEXT("fetchable_socket");
-	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	Fetchable->AttachToComponent(GetMesh(), AttachmentRules, FSocketName);
+void AComputatoriumCharacter::PostUnbindFetchable(AFetchable *Fetchable) {
+	// Enable navigation affect
+	Fetchable->HitBox->SetCanEverAffectNavigation(true);
 
-	// Set the held fetchable
-	HeldFetchable = Fetchable;
+	// Unset bound fetchable
+	BoundFetchable = nullptr;
+	// Unset target receptor
+	TargetReceptor = nullptr;
 
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Receptored!"));
+}
+
+void AComputatoriumCharacter::PostBindFetchable(AFetchable *Fetchable) {
+	// Set the players bound fetchable
+	BoundFetchable = Fetchable;
 	// Reset target fetchable
 	TargetFetchable = nullptr;
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
 }
 
-void AComputatoriumCharacter::DropOffFetchable(AFetchable* Fetchable, AReceptor* Receptor) {
-	// Detach fetchable from player
-	const FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
-	Fetchable->DetachFromActor(DetachRules);
-
-	// Enable navigation affect
-	Fetchable->HitBox->SetCanEverAffectNavigation(true);
-
-	// Attach to receptors socket
-	const FName FSocketName = TEXT("fetchable_socket");
-	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	//        HeldFetchable->AttachToComponent(TargetReceptor->Mesh, AttachmentRules, FSocketName);
-	// Need to detach from player and place in hitbox
-
-	// Unset target receptor
-	TargetReceptor = nullptr;
-
-	// Unset held fetchable
-	HeldFetchable = nullptr;
-
-	// TODO : Should probably trigger navigation event to push actor out from the box here
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Receptored!"));
-}
-
+// TODO refactor this mess into more sensible functions
 void AComputatoriumCharacter::SetTargetFetchable(AFetchable* Fetchable) {
-    TargetFetchable = Fetchable;
-    
-	if (Fetchable) {
+	// Can only grab one fetchable at a time
+	if (BoundFetchable != nullptr)
+		return;
+
+	// We have a new target fetchable
+	if (Fetchable != nullptr && Fetchable != TargetFetchable) {
+        // Disable navigation on old target fetcahble
+		if (TargetFetchable) {
+		  TargetFetchable->HitBox->SetCanEverAffectNavigation(true);
+		}
+
+		// Set the players target fetchable to the clicked on fetchable
+		TargetFetchable = Fetchable;
+
 		// Disable navigation effects from fetchable so our player can hit it
 		Fetchable->HitBox->SetCanEverAffectNavigation(false);
-
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target fetchable!"));
+	}
+	// Our target fetchable has been unselected
+	else if(Fetchable == nullptr && TargetFetchable != nullptr) {
+		TargetFetchable->HitBox->SetCanEverAffectNavigation(true);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Unsetting target fetchable!"));
 	}
 }
 

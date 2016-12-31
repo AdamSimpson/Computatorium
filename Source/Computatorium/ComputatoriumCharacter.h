@@ -1,13 +1,14 @@
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "GameFramework/Character.h"
+#include "AcceptsFetchable.h"
 #include "ComputatoriumCharacter.generated.h"
 
 class AFetchable;
 class AReceptor;
 
 UCLASS(Blueprintable)
-class AComputatoriumCharacter : public ACharacter
+class AComputatoriumCharacter : public ACharacter, public AcceptsFetchable
 {
 	GENERATED_BODY()
 
@@ -47,7 +48,7 @@ private:
     AFetchable* TargetFetchable;
 
     UPROPERTY(VisibleAnywhere, Category="Fetchable")
-    AFetchable* HeldFetchable;
+    AFetchable* BoundFetchable;
 
 	UPROPERTY(VisibleAnywhere, Category = "Fetchable")
 	AFetchable* OverlappingFetchable;
@@ -67,13 +68,8 @@ private:
 	UFUNCTION()
 	void OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	UFUNCTION()
-	void PickupFetchable(AFetchable* Fetchable);
-
-	UFUNCTION()
-	void DropOffFetchable(AFetchable* Fetchable, AReceptor* Receptor);
-
-	UFUNCTION()
-	bool CanPickupFetchable(AFetchable* Fetchable);
+	bool CanBindFetchable(AFetchable* Fetchable) override;
+	void PostBindFetchable(AFetchable *Fetchable) override;
+	void PostUnbindFetchable(AFetchable *Fetchable) override;
 };
 

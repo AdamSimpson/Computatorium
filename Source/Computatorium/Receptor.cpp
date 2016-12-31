@@ -12,14 +12,39 @@ AReceptor::AReceptor() {
     // Create the hitbox component
     HitBox = CreateDefaultSubobject<UBoxComponent>(TEXT("HitBox"));
     RootComponent = HitBox;
+
+	// Create the static mesh component
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	Mesh->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
 void AReceptor::BeginPlay() {
-	Super::BeginPlay();	
+	Super::BeginPlay();
+
+	// Look for a fetchable set from the editor and correctly bind it
+	if (BoundFetchable != nullptr) {
+		BoundFetchable->BindToActor(this, Mesh);
+	}
+}
+
+void AReceptor::PostBindFetchable(AFetchable *Fetchable) {
+	BoundFetchable = Fetchable;
+
+	// Hide receptor and turn off collision
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
+}
+
+void AReceptor::PostUnbindFetchable(AFetchable *Fetchable) {
+	BoundFetchable = nullptr;
+
+	// Make receptor visible and enable collision
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
 }
 
 // Accept any fetchable
-bool AReceptor::CanAcceptFetchable(AFetchable *Fetchable) {
-	return Fetchable != nullptr;
+bool AReceptor::CanBindFetchable(AFetchable *Fetchable) {
+	return (Fetchable != nullptr && BoundFetchable == nullptr);
 }
