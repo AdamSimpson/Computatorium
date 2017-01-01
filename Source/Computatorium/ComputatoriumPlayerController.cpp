@@ -96,9 +96,9 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
 		// Adjust the HitLocation of fetchable or receptor to ensure the player picks it up
 		// Without this the player will sometimes not quite hit the the targeted actor
 		if (TestFetchable)
-			HitLocation = TestFetchable->HitBox->Bounds.GetBox().GetCenter(); //TestFetchable->GetActorLocation();
+			HitLocation = TestFetchable->GetActorLocation();
 		if (TestReceptor)
-			HitLocation = TestReceptor->HitBox->Bounds.GetBox().GetCenter(); //TestReceptor->GetActorLocation();
+			HitLocation = TestReceptor->GetActorLocation();
 
 		// We need to issue move command only if far enough in order for walk animation to play correctly
         UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();

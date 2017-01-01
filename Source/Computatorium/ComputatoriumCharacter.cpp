@@ -57,14 +57,10 @@ AComputatoriumCharacter::AComputatoriumCharacter() {
 	PrimaryActorTick.bStartWithTickEnabled = true;
     
 	// Register OnHit delegate
- //   OnActorHit.AddDynamic(this, &AComputatoriumCharacter::OnHit);
-
+//   OnActorHit.AddDynamic(this, &AComputatoriumCharacter::OnHit);
 	// Register OnOverlap delegates
-	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AComputatoriumCharacter::OnBeginOverlap);
-	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AComputatoriumCharacter::OnEndOverlap);
-
-	OverlappingReceptor = nullptr;
-	OverlappingFetchable = nullptr;
+//	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AComputatoriumCharacter::OnBeginOverlap);
+//	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AComputatoriumCharacter::OnEndOverlap);
 }
 
 void AComputatoriumCharacter::Tick(float DeltaSeconds) {
@@ -98,13 +94,27 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds) {
 	}
 
 	// Check if player needs to bind to fetchable object
-	if (TargetFetchable != nullptr && OverlappingFetchable == TargetFetchable && CanBindFetchable(TargetFetchable)) {
-		TargetFetchable->BindToActor(this, GetMesh());
+	if (TargetFetchable != nullptr) {
+		GetOverlappingActors(OverlappingFetchables, AFetchable::StaticClass());
+
+		// Loop through overlapping fetchables and check if any are our target fetchable
+		for(auto OverlappingFetchable : OverlappingFetchables) {
+			if (OverlappingFetchable == TargetFetchable && CanBindFetchable(TargetFetchable)) {
+				TargetFetchable->BindToActor(this, GetMesh());
+			}
+		}
 	}
 
 	// Check if player needs to deposit the fetchable object to receptor
-	if (TargetReceptor != nullptr && OverlappingReceptor == TargetReceptor && TargetReceptor->CanBindFetchable(BoundFetchable)) {
-		BoundFetchable->BindToActor(TargetReceptor, TargetReceptor->Mesh);
+	if (TargetReceptor != nullptr) {
+	    GetOverlappingActors(OverlappingReceptors, AReceptor::StaticClass());
+
+		// Loop through overlapping receptors and check if any are our target receptor
+		for(auto OverlappingReceptor : OverlappingReceptors) {
+			if (OverlappingReceptor == TargetReceptor && TargetReceptor->CanBindFetchable(BoundFetchable)) {
+				BoundFetchable->BindToActor(TargetReceptor, TargetReceptor->Mesh);
+			}
+		}
 	}
 
 }
@@ -112,53 +122,6 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds) {
 bool AComputatoriumCharacter::CanBindFetchable(AFetchable* Fetchable) {
 	// If we aren't holding a fetchable we can pick one up
 	return (BoundFetchable == nullptr);
-}
-
-void AComputatoriumCharacter::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit) {
-
-}
-
-void AComputatoriumCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp,
-	                                         AActor* OtherActor, 
-	                                         UPrimitiveComponent* OtherComp, 
-	                                         int32 OtherBodyIndex, 
-	                                         bool bFromSweep,
-	                                         const FHitResult& SweepResult)  {
-
-	if ( (OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) ) {
-
-		// Begin to overlap a fetchable
-		AFetchable *TestFetchable = Cast<AFetchable>(OtherActor);
-		if (TestFetchable) {
-			OverlappingFetchable = TestFetchable;
-		}
-
-		// Begin to overlap a receptor
-		AReceptor *TestReceptor = Cast<AReceptor>(OtherActor);
-		if (TestReceptor) {
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Overlap receptor!"));
-			OverlappingReceptor = TestReceptor;
-		}
-	}
-}
-
-void AComputatoriumCharacter::OnEndOverlap(UPrimitiveComponent* OverlappedComp,
-	                                       AActor* OtherActor,
-	                                       UPrimitiveComponent* OtherComp,
-	                                       int32 OtherBodyIndex) {
-
-	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr)) {
-
-		// End overlap targeted fetchable
-		if (OtherActor == OverlappingFetchable && OverlappingFetchable != nullptr) {
-			OverlappingFetchable = nullptr;
-		}
-
-		// End overlap of Receptor
-		if (OtherActor == OverlappingReceptor && OverlappingReceptor != nullptr) {
-			OverlappingReceptor = nullptr;
-		}
-	}
 }
 
 void AComputatoriumCharacter::PostUnbindFetchable(AFetchable *Fetchable) {

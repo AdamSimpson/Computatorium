@@ -49,24 +49,21 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category="Fetchable")
     AFetchable* BoundFetchable;
-
-	UPROPERTY(VisibleAnywhere, Category = "Fetchable")
-	AFetchable* OverlappingFetchable;
     
     UPROPERTY(VisibleAnywhere, Category="Receptor")
     AReceptor* TargetReceptor;
 
-	UPROPERTY(VisibleAnywhere, Category = "Receptor")
-	AReceptor* OverlappingReceptor;
+//	UFUNCTION()
+//	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
 
-	UFUNCTION()
-	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+//	UFUNCTION()
+//	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION()
-	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+//	UFUNCTION()
+//	void OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	UFUNCTION()
-	void OnEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	TSet<AActor*> OverlappingFetchables;
+	TSet<AActor*> OverlappingReceptors;
 
 	bool CanBindFetchable(AFetchable* Fetchable) override;
 	void PostBindFetchable(AFetchable *Fetchable) override;
