@@ -19,9 +19,9 @@ void AComputatoriumPlayerController::PlayerTick(float DeltaTime) {
 	Super::PlayerTick(DeltaTime);
 
 	// keep updating the destination every tick while desired
-	if (bMoveToMouseCursor) {
-		MoveToMouseCursor();
-	}
+//	if (bMoveToMouseCursor) {
+//		MoveToMouseCursor();
+//	}
 }
 
 void AComputatoriumPlayerController::SetupInputComponent() {
@@ -81,7 +81,7 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
     
 	if (APlayer) {
         FVector HitLocation = Hit.ImpactPoint;
-		float const Distance = FVector::Dist(HitLocation, APlayer->GetActorLocation());
+//		float const Distance = FVector::Dist(HitLocation, APlayer->GetActorLocation());
 
         auto* HitActor = Hit.GetActor();
         
@@ -93,6 +93,13 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
         auto *TestReceptor = Cast<AReceptor>(HitActor);
         APlayer->SetTargetReceptor(TestReceptor);
 
+		// Adjust the HitLocation of fetchable or receptor to ensure the player picks it up
+		// Without this the player will sometimes not quite hit the the targeted actor
+		if (TestFetchable)
+			HitLocation = TestFetchable->HitBox->Bounds.GetBox().GetCenter(); //TestFetchable->GetActorLocation();
+		if (TestReceptor)
+			HitLocation = TestReceptor->HitBox->Bounds.GetBox().GetCenter(); //TestReceptor->GetActorLocation();
+
 		// We need to issue move command only if far enough in order for walk animation to play correctly
         UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();
 	//	if (NavSys && (Distance > 120.0f)) {
@@ -102,6 +109,7 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
 }
 
 void AComputatoriumPlayerController::OnSetDestinationPressed() {
+	MoveToMouseCursor();
 	// set flag to keep updating destination until released
 	bMoveToMouseCursor = true;
 }

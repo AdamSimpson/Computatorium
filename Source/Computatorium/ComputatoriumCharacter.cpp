@@ -136,6 +136,7 @@ void AComputatoriumCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComp
 		// Begin to overlap a receptor
 		AReceptor *TestReceptor = Cast<AReceptor>(OtherActor);
 		if (TestReceptor) {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Overlap receptor!"));
 			OverlappingReceptor = TestReceptor;
 		}
 	}
@@ -169,7 +170,7 @@ void AComputatoriumCharacter::PostUnbindFetchable(AFetchable *Fetchable) {
 	// Unset target receptor
 	TargetReceptor = nullptr;
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Receptored!"));
+	
 }
 
 void AComputatoriumCharacter::PostBindFetchable(AFetchable *Fetchable) {
