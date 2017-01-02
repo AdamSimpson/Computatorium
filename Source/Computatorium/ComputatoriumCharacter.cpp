@@ -174,6 +174,7 @@ void AComputatoriumCharacter::SetTargetFetchable(AFetchable* Fetchable) {
 	// Our target fetchable has been unselected
 	else if(Fetchable == nullptr && TargetFetchable != nullptr) {
 		TargetFetchable->HitBox->SetCanEverAffectNavigation(true);
+		TargetFetchable = nullptr;
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Unsetting target fetchable!"));
 	}
 }

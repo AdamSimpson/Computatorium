@@ -80,33 +80,32 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
 {
     auto APlayer = Cast<AComputatoriumCharacter>(GetPawn());
     
-	if (APlayer) {
+	if (APlayer && CanSelectNewTarget) {
         FVector HitLocation = Hit.ImpactPoint;
-//		float const Distance = FVector::Dist(HitLocation, APlayer->GetActorLocation());
 
         auto* HitActor = Hit.GetActor();
         
-		if (CanSelectNewTarget) {
-			// Set players target fetchable
-			auto *TestFetchable = Cast<AFetchable>(HitActor);
-			APlayer->SetTargetFetchable(TestFetchable);
+		// Set players target fetchable
+		auto *TestFetchable = Cast<AFetchable>(HitActor);
+		APlayer->SetTargetFetchable(TestFetchable);
 
-			// Set players target receptor
-			auto *TestReceptor = Cast<AReceptor>(HitActor);
-			APlayer->SetTargetReceptor(TestReceptor);
+		// Set players target receptor
+		auto *TestReceptor = Cast<AReceptor>(HitActor);
+		APlayer->SetTargetReceptor(TestReceptor);
 
-			// Adjust the HitLocation of fetchable or receptor to ensure the player picks it up
-			// Without this the player will sometimes barely miss the the targeted actor
-			if (TestFetchable)
-				HitLocation = TestFetchable->GetActorLocation();
-			if (TestReceptor)
-				HitLocation = TestReceptor->GetActorLocation();
+		// Adjust the HitLocation of fetchable or receptor to ensure the player picks it up
+		// Without this the player will sometimes barely miss the the targeted actor
+		if (TestFetchable != nullptr)
+			HitLocation = TestFetchable->GetActorLocation();
+		if (TestReceptor != nullptr)
+			HitLocation = TestReceptor->GetActorLocation();
 
-			// Disable selecting a new target for a short while to avoid spamming receptors/fetchables
+		// Enable cooldown after hitting fetchable/receptor so these areas don't get spanned
+		if (TestFetchable != nullptr || TestReceptor != nullptr) {
 			CanSelectNewTarget = false;
 			FTimerDelegate TimerCallback;
 			FTimerHandle Handle;
-			TimerCallback.BindLambda([this] {CanSelectNewTarget = true;});
+			TimerCallback.BindLambda([this] {CanSelectNewTarget = true; });
 			GetWorldTimerManager().SetTimer(Handle, TimerCallback, 0.15f, false);
 		}
 
