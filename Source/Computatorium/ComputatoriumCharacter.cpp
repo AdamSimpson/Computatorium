@@ -100,7 +100,7 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds) {
 		// Loop through overlapping fetchables and check if any are our target fetchable
 		for(auto OverlappingFetchable : OverlappingFetchables) {
 			if (OverlappingFetchable == TargetFetchable && CanBindFetchable(TargetFetchable)) {
-				TargetFetchable->BindToActor(this, GetMesh());
+				this->BindFetchable(TargetFetchable);
 			}
 		}
 	}
@@ -112,11 +112,15 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds) {
 		// Loop through overlapping receptors and check if any are our target receptor
 		for(auto OverlappingReceptor : OverlappingReceptors) {
 			if (OverlappingReceptor == TargetReceptor && TargetReceptor->CanBindFetchable(BoundFetchable)) {
-				BoundFetchable->BindToActor(TargetReceptor, TargetReceptor->Mesh);
+				TargetReceptor->BindFetchable(BoundFetchable);
 			}
 		}
 	}
 
+}
+
+void AComputatoriumCharacter::BindFetchable(AFetchable *Fetchable) {
+	Fetchable->BindToActor(this, GetMesh());
 }
 
 bool AComputatoriumCharacter::CanBindFetchable(AFetchable* Fetchable) {
@@ -132,17 +136,19 @@ void AComputatoriumCharacter::PostUnbindFetchable(AFetchable *Fetchable) {
 	BoundFetchable = nullptr;
 	// Unset target receptor
 	TargetReceptor = nullptr;
-
-	
 }
 
 void AComputatoriumCharacter::PostBindFetchable(AFetchable *Fetchable) {
 	// Set the players bound fetchable
 	BoundFetchable = Fetchable;
-	// Reset target fetchable
+	// Unset target fetchable
 	TargetFetchable = nullptr;
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Fetched!"));
+}
+
+USceneComponent* AComputatoriumCharacter::GetBindingComponent() {
+	return GetMesh();
 }
 
 // TODO refactor this mess into more sensible functions

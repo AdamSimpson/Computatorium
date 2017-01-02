@@ -13,15 +13,16 @@
 AComputatoriumPlayerController::AComputatoriumPlayerController() {
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
+	CanSelectNewTarget = true;
 }
 
 void AComputatoriumPlayerController::PlayerTick(float DeltaTime) {
 	Super::PlayerTick(DeltaTime);
 
 	// keep updating the destination every tick while desired
-//	if (bMoveToMouseCursor) {
-//		MoveToMouseCursor();
-//	}
+	if (bMoveToMouseCursor) {
+		MoveToMouseCursor();
+	}
 }
 
 void AComputatoriumPlayerController::SetupInputComponent() {
@@ -85,31 +86,37 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
 
         auto* HitActor = Hit.GetActor();
         
-        // Set players target fetchable
-        auto *TestFetchable = Cast<AFetchable>(HitActor);
-        APlayer->SetTargetFetchable(TestFetchable);
-        
-        // Set players target receptor
-        auto *TestReceptor = Cast<AReceptor>(HitActor);
-        APlayer->SetTargetReceptor(TestReceptor);
+		if (CanSelectNewTarget) {
+			// Set players target fetchable
+			auto *TestFetchable = Cast<AFetchable>(HitActor);
+			APlayer->SetTargetFetchable(TestFetchable);
 
-		// Adjust the HitLocation of fetchable or receptor to ensure the player picks it up
-		// Without this the player will sometimes not quite hit the the targeted actor
-		if (TestFetchable)
-			HitLocation = TestFetchable->GetActorLocation();
-		if (TestReceptor)
-			HitLocation = TestReceptor->GetActorLocation();
+			// Set players target receptor
+			auto *TestReceptor = Cast<AReceptor>(HitActor);
+			APlayer->SetTargetReceptor(TestReceptor);
 
-		// We need to issue move command only if far enough in order for walk animation to play correctly
+			// Adjust the HitLocation of fetchable or receptor to ensure the player picks it up
+			// Without this the player will sometimes barely miss the the targeted actor
+			if (TestFetchable)
+				HitLocation = TestFetchable->GetActorLocation();
+			if (TestReceptor)
+				HitLocation = TestReceptor->GetActorLocation();
+
+			// Disable selecting a new target for a short while to avoid spamming receptors/fetchables
+			CanSelectNewTarget = false;
+			FTimerDelegate TimerCallback;
+			FTimerHandle Handle;
+			TimerCallback.BindLambda([this] {CanSelectNewTarget = true;});
+			GetWorldTimerManager().SetTimer(Handle, TimerCallback, 0.15f, false);
+		}
+
+		// Move Character
         UNavigationSystem* const NavSys = GetWorld()->GetNavigationSystem();
-	//	if (NavSys && (Distance > 120.0f)) {
-			NavSys->SimpleMoveToLocation(this, HitLocation);
-//		}
+		NavSys->SimpleMoveToLocation(this, HitLocation);
 	}
 }
 
 void AComputatoriumPlayerController::OnSetDestinationPressed() {
-	MoveToMouseCursor();
 	// set flag to keep updating destination until released
 	bMoveToMouseCursor = true;
 }

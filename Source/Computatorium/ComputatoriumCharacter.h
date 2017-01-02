@@ -31,6 +31,12 @@ public:
     UFUNCTION(BlueprintCallable, Category="Receptor")
     void SetTargetReceptor(AReceptor* receptor);
     
+	void BindFetchable(AFetchable *Fetchable) override;
+	USceneComponent* GetBindingComponent() override;
+	bool CanBindFetchable(AFetchable* Fetchable) override;
+	void PostBindFetchable(AFetchable *Fetchable) override;
+	void PostUnbindFetchable(AFetchable *Fetchable) override;
+
 private:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -64,9 +70,5 @@ private:
 
 	TSet<AActor*> OverlappingFetchables;
 	TSet<AActor*> OverlappingReceptors;
-
-	bool CanBindFetchable(AFetchable* Fetchable) override;
-	void PostBindFetchable(AFetchable *Fetchable) override;
-	void PostUnbindFetchable(AFetchable *Fetchable) override;
 };
 

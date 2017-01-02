@@ -28,6 +28,14 @@ void AReceptor::BeginPlay() {
 	}
 }
 
+USceneComponent* AReceptor::GetBindingComponent() {
+	return Mesh;
+}
+
+void AReceptor::BindFetchable(class AFetchable *Fetchable) {
+	Fetchable->BindToActor(this, Mesh);
+}
+
 void AReceptor::PostBindFetchable(AFetchable *Fetchable) {
 	BoundFetchable = Fetchable;
 
