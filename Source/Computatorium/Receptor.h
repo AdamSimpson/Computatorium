@@ -24,6 +24,8 @@ public:
 	bool CanBindFetchable(AFetchable *Fetchable) override;
 	void PostBindFetchable(AFetchable *Fetchable) override;
 	void PostUnbindFetchable(AFetchable *Fetchable) override;
+
+	AFetchable* GetBoundFetchable();
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fetchable", meta = (AllowPrivateAccess = "true"))
 	class AFetchable* BoundFetchable;

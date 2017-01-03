@@ -4,6 +4,7 @@
 #include "ComputatoriumPlayerController.h"
 #include "Fetchable.h"
 #include "Receptor.h"
+#include "PlayerButton.h"
 #include "Runtime/Engine/Classes/GameFramework/Pawn.h"
 #include "AI/Navigation/NavigationSystem.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
@@ -93,15 +94,21 @@ void AComputatoriumPlayerController::SetNewMoveDestination(const FHitResult& Hit
 		auto *TestReceptor = Cast<AReceptor>(HitActor);
 		APlayer->SetTargetReceptor(TestReceptor);
 
-		// Adjust the HitLocation of fetchable or receptor to ensure the player picks it up
+		// Set players target execute instruction button
+		auto *TestButton = Cast<APlayerButton>(HitActor);
+		APlayer->SetTargetButton(TestButton);
+
+		// Adjust the HitLocation of fetchable, receptor, or button to ensure the player picks it up
 		// Without this the player will sometimes barely miss the the targeted actor
 		if (TestFetchable != nullptr)
 			HitLocation = TestFetchable->GetActorLocation();
-		if (TestReceptor != nullptr)
+		else if (TestReceptor != nullptr)
 			HitLocation = TestReceptor->GetActorLocation();
+		else if(TestButton != nullptr)
+			HitLocation = TestButton->GetActorLocation();
 
-		// Enable cooldown after hitting fetchable/receptor so these areas don't get spanned
-		if (TestFetchable != nullptr || TestReceptor != nullptr) {
+		// Enable cooldown after hitting fetchable/receptor/button so these areas don't get spanned
+		if (TestFetchable != nullptr || TestReceptor != nullptr || TestButton != nullptr) {
 			CanSelectNewTarget = false;
 			FTimerDelegate TimerCallback;
 			FTimerHandle Handle;

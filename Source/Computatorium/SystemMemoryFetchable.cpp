@@ -3,8 +3,13 @@
 #include "Computatorium.h"
 #include "SystemMemoryFetchable.h"
 
+ASystemMemoryFetchable::ASystemMemoryFetchable() {}
 
-ASystemMemoryFetchable::ASystemMemoryFetchable() {
+int ASystemMemoryFetchable::GetValue() {
+	return value;
+}
 
+void ASystemMemoryFetchable::SetValue(int NewValue) {
+	value = NewValue;
 }
 

@@ -4,6 +4,7 @@
 #include "ComputatoriumCharacter.h"
 #include "Fetchable.h"
 #include "Receptor.h"
+#include "PlayerButton.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
 #include "Kismet/HeadMountedDisplayFunctionLibrary.h"
@@ -117,6 +118,18 @@ void AComputatoriumCharacter::Tick(float DeltaSeconds) {
 		}
 	}
 
+	// Check if player needs to click any buttons
+	if (TargetButton != nullptr) {
+		GetOverlappingActors(OverlappingButtons, APlayerButton::StaticClass());
+
+		// Loop through overlapping buttons and check if any are our target button
+		for (auto OverlappingButton : OverlappingButtons) {
+			if (OverlappingButton == TargetButton) {
+				TargetButton->Click();
+				TargetButton = nullptr;
+			}
+		}
+	}
 }
 
 void AComputatoriumCharacter::BindFetchable(AFetchable *Fetchable) {
@@ -184,4 +197,11 @@ void AComputatoriumCharacter::SetTargetReceptor(AReceptor* Receptor) {
     
     if(Receptor != nullptr)
         GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target receptor!"));
+}
+
+void AComputatoriumCharacter::SetTargetButton(APlayerButton* Button) {
+	TargetButton = Button;
+
+	if (Button != nullptr)
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Setting new target button!"));
 }

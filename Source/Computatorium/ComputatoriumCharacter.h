@@ -6,6 +6,7 @@
 
 class AFetchable;
 class AReceptor;
+class APlayerButton;
 
 UCLASS(Blueprintable)
 class AComputatoriumCharacter : public ACharacter, public AcceptsFetchable
@@ -30,6 +31,9 @@ public:
     
     UFUNCTION(BlueprintCallable, Category="Receptor")
     void SetTargetReceptor(AReceptor* receptor);
+
+	UFUNCTION(BlueprintCallable, Category = "Button")
+	void SetTargetButton(APlayerButton* button);
     
 	void BindFetchable(AFetchable *Fetchable) override;
 	USceneComponent* GetBindingComponent() override;
@@ -59,6 +63,9 @@ private:
     UPROPERTY(VisibleAnywhere, Category="Receptor")
     AReceptor* TargetReceptor;
 
+	UPROPERTY(VisibleAnywhere, Category = "Button")
+	APlayerButton* TargetButton;
+
 //	UFUNCTION()
 //	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
 
@@ -70,5 +77,6 @@ private:
 
 	TSet<AActor*> OverlappingFetchables;
 	TSet<AActor*> OverlappingReceptors;
+	TSet<AActor*> OverlappingButtons;
 };
 

@@ -56,3 +56,7 @@ void AReceptor::PostUnbindFetchable(AFetchable *Fetchable) {
 bool AReceptor::CanBindFetchable(AFetchable *Fetchable) {
 	return (Fetchable != nullptr && BoundFetchable == nullptr);
 }
+
+AFetchable* AReceptor::GetBoundFetchable() {
+	return BoundFetchable;
+}

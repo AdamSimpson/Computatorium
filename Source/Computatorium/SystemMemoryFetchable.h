@@ -15,6 +15,9 @@ class COMPUTATORIUM_API ASystemMemoryFetchable : public AFetchable
 
 public:
 	ASystemMemoryFetchable();
+
+	int GetValue();
+	void SetValue(int NewValue);
 	
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Memory", meta = (AllowPrivateAccess = "true"))
