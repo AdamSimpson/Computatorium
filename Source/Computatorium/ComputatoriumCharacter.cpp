@@ -145,6 +145,9 @@ void AComputatoriumCharacter::PostUnbindFetchable(AFetchable *Fetchable) {
 	// Enable navigation affect
 	Fetchable->HitBox->SetCanEverAffectNavigation(true);
 
+	// Stop player reacting to navigation affect being enabled
+	this->GetController()->StopMovement();
+
 	// Unset bound fetchable
 	BoundFetchable = nullptr;
 	// Unset target receptor
