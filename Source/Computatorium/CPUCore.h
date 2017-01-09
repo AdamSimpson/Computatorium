@@ -22,15 +22,15 @@ public:
 
 private:
 	/** Collision mesh to represent the fetchable in the level*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Geometry", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitBox", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* HitBox;
 	/** Static mesh used to setup attachment sockets */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Geometry", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh", meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* Mesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Operand", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Operand1", meta = (AllowPrivateAccess = "true"))
 	class UReceptorComponent* OperandOneReceptor;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Operand", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Operand2", meta = (AllowPrivateAccess = "true"))
 	class UReceptorComponent* OperandTwoReceptor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Result", meta = (AllowPrivateAccess = "true"))
 	class UReceptorComponent* ResultReceptor;
