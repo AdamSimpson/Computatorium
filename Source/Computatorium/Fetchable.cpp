@@ -21,20 +21,23 @@ AFetchable::AFetchable() {
 
 	BindingActor = nullptr;
 }
+
 // Assume Component contains a socket named "fetchable_socket"
 void AFetchable::BindToActor(AcceptsFetchable *Actor, USceneComponent *Component) {
+	// Detach from current binding actor
 	if (BindingActor != nullptr) {
 		BindingActor->PreUnbindFetchable(this);
 
-		// Detach from current binding actor
 		const FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 		DetachFromActor(DetachRules);
 
 		BindingActor->PostUnbindFetchable(this);
 	}
+
 	// Set new binding actor
 	BindingActor = Actor;
 
+	// Bind to Actor
 	BindingActor->PreBindFetchable(this);
 
 	// Attach fetchable to mesh socket
