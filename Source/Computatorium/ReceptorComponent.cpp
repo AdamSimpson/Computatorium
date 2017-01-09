@@ -7,29 +7,19 @@
 // Sets default values for this component's properties
 UReceptorComponent::UReceptorComponent()
 {
-	// We must give each HitBox and Mesh a uninque string name
-	// otherwise when editing the blueprint the component hierarchy is jacked
-	static int32 NamingHack = 1;
-
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// Create the hitbox component
-	FString HitBoxString("ReceptorHitBox");
-	HitBoxString.AppendInt(NamingHack);
-	FName HitBoxName = FName(*HitBoxString);
+	auto HitBoxName = MakeUniqueObjectName(GetOuter(), UReceptorComponent::StaticClass(), "HitBox");
 	HitBox = CreateDefaultSubobject<UBoxComponent>(HitBoxName);
 	HitBox->AttachTo(this);
 
 	// Create the static mesh component
-	FString MeshString("ReceptorMesh");
-	MeshString.AppendInt(NamingHack);
-	FName MeshName = FName(*MeshString);
+	auto MeshName = MakeUniqueObjectName(GetOuter(), UReceptorComponent::StaticClass(), "Mesh");
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(MeshName);
 	Mesh->SetupAttachment(HitBox);
-
-	NamingHack++;
 }
 
 // Called when the game starts
